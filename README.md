@@ -1,4 +1,4 @@
-# SyNG-BTS: Synthesis of Next Generation Bulk Transcriptomic Sequencing,
+# SyNG-BTS: Synthesis of Next Generation Bulk Transcriptomic Sequencing
 
 ## What is it
 

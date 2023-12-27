@@ -23,6 +23,7 @@ The developmental version of the package has been tested on the following system
  
   
 #### Python Dependencies
+`SyNG-BTS` is developed under Python(version >= 3.6). 
 `SyNG-BTS` depends on the following Python packages:
 
     torch 1.3.1

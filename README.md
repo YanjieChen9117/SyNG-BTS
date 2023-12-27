@@ -5,77 +5,71 @@
 SyNG-BTS is a data augmentation tool synthesizing transcriptomics data with realistic distributions without relying on a predefined formula. Three deep generative models are considered, incluing Variational Auto Encoder (VAE), Generative Adversarial Network (GAN), and flow-based generative model. Those models will be trained on a pilot dataset and then utilized to generate data for any desired number of samples. The workflow of SyNG-BTS is depicted in the following figure:
 
 <p align="center">
-  <img src="./pics/PENCIL_overview_v3.png" width = "1000" alt="method" align=center />
+  <img src="./pics/sygn-bts-workflow.jpg" width = "1000" alt="method" align=center />
 </p>
 
 ## News 
-* Sep, 2022: PENCIL version 1.0.0 is launched.
+* Jan, 2024: SyNG-BTS version 1.0.0 is launched.
 
 ## System Requirements
 ### Hardware requirements
-`PENCIL` package requires only a standard computer with enough RAM to support the in-memory operations. If a GPU with enough VRAM is available, `PENCIL` can also be deployed on it to achieve computational acceleration.
-
-The following runtimes are generated using a computer with 16GB RAM, 8 cores@3.2 GHz CPU, RTX3060 GPU (6GB VRAM) and 50 Mbps internet speed.
+`SyNG-BTS` requires only a standard computer with enough RAM to support the in-memory operations. 
 
 ### Software requirements
 #### OS Requirements
 The developmental version of the package has been tested on the following systems:
 + Windows
 + MacOS
-+ Linux 
+ 
   
 #### Python Dependencies
-`PENCIL` depends on the following Python packages:
+`SyNG-BTS` depends on the following Python packages:
 
-    numpy	1.20.3
-    pandas	1.3.4
-    torch	1.10.0 
-    seaborn	0.11.2 p
-    umap-learn 0.5.2 
-    mlflow	1.23.1
-
-## How to install
-PENCIL is developed under Python(version >= 3.9). To build PENCIL, clone the repository:
-
-    git clone https://github.com/cliffren/PENCIL.git
-    cd PENCIL
-
-Then install the PENCIL package by pip, and all requirements will be installed automatically.
-
-    pip install -e .
-You can also install the dependency packages manually, especially for the **GPU** version of pytorch, which is automatically installed for the CPU version. The default installation should take approximately 1 minutes and 45 seconds on the computer for testing.
+    torch 1.3.1
+    pandas 1.0.5
+    seaborn 0.9.0
+    numpy 1.19.1
+    pathlib2 2.3.2
+    re 2.2.1
+    scipy 1.4.1
+    matplotlib 2.2.3
+    tqdm 4.26.0
+    tensorboardX 2.5.0
+    os
+    random
+    time
+    copy
+    math
 
 ## Quick start in python
 ```python
-from pencil import *
+from Experiments_new import *
 
-# prepare data source
-expression_data = np.random.rand(5000, 2000) # 5000 cells and 2000 genes.
-phenotype_labels = np.random.randint(0, 3, 5000)
-class_names = ['class_1', 'class_2', 'class_3']
+# run pilot experiments
+PilotExperiment(dataname = "SKCMPositive_4", pilot_size = [100],
+                model = "VAE1-10", batch_frac = 0.1, 
+                learning_rate = 0.0005, pre_model = None,
+                epoch = None,  off_aug = None, early_stop_num = 30,
+                AE_head_num = 2, Gaussian_head_num = 9)
 
-# init a pencil model
-model = Pencil(mode='multi-classification', select_genes=True, mlflow_record=True)
+# running application on case study BRCASubtype
+ApplyExperiment(path = "../Case/BRCASubtype/", dataname = "BRCASubtypeSel", apply_log = True, 
+                new_size = [1000], model = "WGANGP" , batch_frac = 0.1, 
+                learning_rate = 0.0005, epoch = 10, early_stop_num = 30, 
+                off_aug = None, AE_head_num = 2, Gaussian_head_num = 9, 
+                pre_model = None, save_model = None)
 
-# run
-with mlflow.start_run():
-    pred_labels, confidence = model.fit_transform(
-      expression_data, phenotype_labels,
-      class_names=class_names,
-      plot_show=True
-    )
-    gene_weights = model.gene_weights(plot=True)
+# Running transfer learning
+Transfer(pilot_size = None, fromname = "PRAD", toname = "BRCA", fromsize = 551, 
+         new_size = 500, apply_log = True, model = "maf", epoch = 10,
+         batch_frac = 0.1, learning_rate = 0.0005, off_aug = None)
 ```
 
 ## Examples & Tutorials
-Using two examples with **categorical** or **continuous** phenotype labels, respectively, we demonstrate how to execute PENCIL. <br>
-
-If you are used to working with the R, start here:
-+ [PENCIL Tutorial in R](https://cliffren.github.io/PENCIL/examples/PENCIL_Tutorial_in_R.html)
-+ [PENCIL Tutorial in R (additional)](https://cliffren.github.io/PENCIL/examples/PENCIL_Tutorial_in_R_additional.html)
+Using three examples of pilot experiment for VAE with loss ratio 1-10 on dataset SKCMPositive_4, case study for WGAN-GP on dataset BRCASubtype and transfer learning for MAF from PRAD dataset to BRCA,  we demonstrate how to execute 'SyNG-BTS'. <br>
 
 If you also would like to use PENCIL in python, continue here:
-+ [PENCIL Tutorial in Python](https://github.com/cliffren/PENCIL/blob/main/examples/PENCIL_Tutorial_in_Python.ipynb)
++ [SyNG Tutorial in Python](https://github.com/cliffren/PENCIL/blob/main/examples/PENCIL_Tutorial_in_Python.ipynb)
 
 The R tutorial or python tutorial would take about 5 minutes on the test computer using GPU (58 minutes using CPU only). 
 

@@ -72,13 +72,13 @@ If you also would like to use PENCIL in python, continue here:
 + [SyNG Tutorial in Python](https://github.com/LXQin/SyNG-BTS/blob/main/SyNG-BTS/Python/Experiments_run.ipynb)
 
 
-## How to Cite SyNG-BTS
+## How to Cite SyNG-BTS (unfinished)
 Please cite the following manuscript:
 >Supervised learning of high-confidence phenotypic subpopulations from single-cell data. Nature Machine Intelligence (2023). https://doi.org/10.1038/s42256-023-00656-y. <br>
 Tao Ren, Canping Chen, Alexey V. Danilov, Susan Liu, Xiangnan Guan, Shunyi Du, Xiwei Wu, Mara H. Sherman, Paul T. Spellman, Lisa M. Coussens, Andrew C. Adey, Gordon B. Mills, Ling-Yun Wu and Zheng Xia
 
 
-## License
+## License (unfinished)
 PENCIL is licensed under the GNU General Public License v3.0. <br>
 PENCIL will be updated frequently with new features and improvements. If you have any questions, please submit them on the [GitHub issues page](https://github.com/cliffren/PENCIL/issues) or check the [FAQ](https://cliffren.github.io/PENCIL/examples/FAQ/PENCIL_FAQ.html) list.
 

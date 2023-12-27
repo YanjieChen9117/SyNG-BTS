@@ -69,11 +69,10 @@ Transfer(pilot_size = None, fromname = "PRAD", toname = "BRCA", fromsize = 551,
 Using three examples of pilot experiment for VAE with loss ratio 1-10 on dataset SKCMPositive_4, case study for WGAN-GP on dataset BRCASubtype and transfer learning for MAF from PRAD dataset to BRCA,  we demonstrate how to execute 'SyNG-BTS'. <br>
 
 If you also would like to use PENCIL in python, continue here:
-+ [SyNG Tutorial in Python](https://github.com/cliffren/PENCIL/blob/main/examples/PENCIL_Tutorial_in_Python.ipynb)
++ [SyNG Tutorial in Python](https://github.com/LXQin/SyNG-BTS/blob/main/SyNG-BTS/Python/Experiments_run.ipynb)
 
-The R tutorial or python tutorial would take about 5 minutes on the test computer using GPU (58 minutes using CPU only). 
 
-## How to Cite PENCIL
+## How to Cite SyNG-BTS
 Please cite the following manuscript:
 >Supervised learning of high-confidence phenotypic subpopulations from single-cell data. Nature Machine Intelligence (2023). https://doi.org/10.1038/s42256-023-00656-y. <br>
 Tao Ren, Canping Chen, Alexey V. Danilov, Susan Liu, Xiangnan Guan, Shunyi Du, Xiwei Wu, Mara H. Sherman, Paul T. Spellman, Lisa M. Coussens, Andrew C. Adey, Gordon B. Mills, Ling-Yun Wu and Zheng Xia

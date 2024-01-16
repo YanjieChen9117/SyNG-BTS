@@ -81,5 +81,5 @@ Tao Ren, Canping Chen, Alexey V. Danilov, Susan Liu, Xiangnan Guan, Shunyi Du, X
 
 ## License
 SyNG-BTS is licensed under the GNU General Public License v3.0. <br>
-SyNG-BTS will be updated frequently with new features and improvements. If you have any questions, please submit them on the [GitHub issues page](https://github.com/cliffren/PENCIL/issues).
+SyNG-BTS will be updated frequently with new features and improvements. If you have any questions, please submit them on the [GitHub issues page](https://github.com/LXQin/SyNG-BTS/issues).
 

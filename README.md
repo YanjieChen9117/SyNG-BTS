@@ -83,3 +83,5 @@ Tao Ren, Canping Chen, Alexey V. Danilov, Susan Liu, Xiangnan Guan, Shunyi Du, X
 SyNG-BTS is licensed under the GNU General Public License v3.0. <br>
 SyNG-BTS will be updated frequently with new features and improvements. If you have any questions, please submit them on the [GitHub issues page](https://github.com/LXQin/SyNG-BTS/issues).
 
+## Reference 
+Sebastian, Raschka. Spring 2021. STAT 453 Notes:Introduction to Deep Learning and Generative Models. Department of Statistics, University of Wisconsin-Madison. https://sebastianraschka.com/teaching/stat453-ss2021/.

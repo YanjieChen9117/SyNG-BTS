@@ -67,9 +67,9 @@ Transfer(pilot_size = None, fromname = "PRAD", toname = "BRCA", fromsize = 551,
 ```
 
 ## Examples & Tutorials
-Using three examples of pilot experiment for VAE with loss ratio 1-10 on dataset SKCMPositive_4, case study for WGAN-GP on dataset BRCASubtype and transfer learning for MAF from PRAD dataset to BRCA,  we demonstrate how to execute 'SyNG-BTS'. <br>
+Using three examples of pilot experiment for VAE with loss ratio 1-10 on dataset SKCMPositive_4, case study for CVAE1-20 on dataset BRCASubtype and transfer learning for MAF from PRAD dataset to BRCA,  we demonstrate how to execute 'SyNG-BTS'. <br>
 
-If you also would like to use SyntheSize in Python, continue here:
+If you also would like to use SyNG-BTS in Python, continue here:
 + [SyNG-BTS Tutorial in Python](https://github.com/LXQin/SyNG-BTS/blob/main/syng_bts/python/Experiments_run.ipynb)
 
 

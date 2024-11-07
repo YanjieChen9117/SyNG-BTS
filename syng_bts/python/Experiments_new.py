@@ -31,7 +31,7 @@ def PilotExperiment(dataname, pilot_size, model, batch_frac, learning_rate, epoc
         Parameters
         ----------
         dataname : string
-                   pure data name without .csv. Eg: SKCMPositive_3
+                   pure data name without .csv. Eg: SKCMPositive_4
         pilot_size : list
                      a list including potential pilot sizes
         model : string
@@ -592,7 +592,7 @@ def ApplyExperiment(path, dataname, apply_log, new_size, model, batch_frac, lear
         print("wait for other models")
 
 #%% Define transfer learing 
-def TransferExperiment(pilot_size, fromname, toname, new_size_pre, model, new_size=500, apply_log=True, epoch=None, batch_frac=0.1, learning_rate=0.0005, off_aug=None):
+def TransferExperiment(pilot_size, fromname, toname, fromsize, model, new_size=500, apply_log=True, epoch=None, batch_frac=0.1, learning_rate=0.0005, off_aug=None):
     """
     This function runs transfer learning using VAE or CVAE, or GAN, WGAN, WGANGP, MAF, GLOW, RealNVP. 
     The model will be first trained on the pre-training dataset, and then the trained model will be saved, and the fine-tuning dataset will be trained on the save model. 
@@ -608,28 +608,28 @@ def TransferExperiment(pilot_size, fromname, toname, new_size_pre, model, new_si
                 name of the pretraining dataset
     toname : string 
                 name of the fine tuning dataset
-    new_size_pre : int
+    fromsize : int
                 number of generated samples when pre-training the model
     new_size : int
-                        if apply experiment, this will be the sample size of generated samples
+                if apply experiment, this will be the sample size of generated samples
     apply_log : boolean
-                      logical whether apply log transformation before training
+                logical whether apply log transformation before training
     model : string
-                              name of the model to be trained
+                name of the model to be trained
     batch_frac : float
-                    batch fraction
+                batch fraction
     learning_rate : float
               learning rate 
     epoch : int
-                              choose from None (early_stop), or any interger, if choose None, early_stop_num will take effect
+            choose from None (early_stop), or any interger, if choose None, early_stop_num will take effect
     off_aug : string (AE_head or Gaussian_head or None)
-                          choose from AE_head, Gaussian_head, None. if choose AE_head, AE_head_num will take effect. If choose Gaussian_head, Gaussian_head_num will take effect. If choose None, no offline augmentation
+            choose from AE_head, Gaussian_head, None. if choose AE_head, AE_head_num will take effect. If choose Gaussian_head, Gaussian_head_num will take effect. If choose None, no offline augmentation
     """
 
     path = "../Transfer/"
     save_model = "../Transfer/"+toname+"_from"+fromname+"_"+model+".pt"
     ApplyExperiment(path = path, dataname = fromname, apply_log = apply_log, 
-                    new_size = [new_size_pre], model = model , batch_frac = batch_frac, 
+                    new_size = [fromsize], model = model , batch_frac = batch_frac, 
                     learning_rate = learning_rate, epoch = epoch, early_stop_num = 30, 
                     off_aug = off_aug, AE_head_num = 2, Gaussian_head_num = 9, 
                     pre_model = None, save_model = save_model)

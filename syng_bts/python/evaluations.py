@@ -86,7 +86,7 @@ def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, legend_pos
     plt.title('UMAP Projection of Real and Generated Data')
     plt.show()
 
-def evaluation(generated_input: str = "BRCASubtypeSel_train.csv", 
+def evaluation(generated_input: str = "BRCASubtypeSel_train_epoch285_CVAE1-20_generated.csv", 
                real_input: str = "BRCASubtypeSel_test.csv"):
     r"""
     This method provides preprocessing of the input data prior to creating the visualizations.
@@ -99,8 +99,8 @@ def evaluation(generated_input: str = "BRCASubtypeSel_train.csv",
     
     """
     train_path = "../Case/BRCASubtype/" + generated_input
-    if generated_input == 'BRCASubtypeSel_train.csv' and not os.path.exists(path=train_path):
-        with pkg_resources.open_text('syng_bts_imports.Case.BRCASubtype', 'BRCASubtypeSel_train.csv') as data_file:
+    if generated_input == 'BRCASubtypeSel_train_epoch285_CVAE1-20_generated.csv' and not os.path.exists(path=train_path):
+        with pkg_resources.open_text('syng_bts_imports.Case.BRCASubtype', 'BRCASubtypeSel_train_epoch285_CVAE1-20_generated.csv') as data_file:
             generated = pd.read_csv(data_file)
     else:
         generated = pd.read_csv(train_path, header = 0)

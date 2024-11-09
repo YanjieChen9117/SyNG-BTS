@@ -234,10 +234,6 @@ def plot_new_samples(model, modelname, savepathnew, latent_size, num_images, plo
                 new_images = model.decoder(rand_features)
                 new_labels = torch.ones(num_images)
                 new_labels[:int(num_images / 2)] = 0
-                # Define the label mapping
-                label_mapping = {0: "Lobular", 1: "Ductal"}
-                # Apply the mapping to convert numeric labels to text labels
-                new_labels = [label_mapping[int(label)] for label in new_labels]
 
                 # new samples are still with last column as group indication
                 new_images = torch.cat((new_images, torch.unsqueeze(new_labels, 1)), dim=1)
@@ -270,9 +266,6 @@ def plot_new_samples(model, modelname, savepathnew, latent_size, num_images, plo
                 new_labels = torch.ones(num_images_repe)
                 new_labels[:num_images_0] = 0
                 new_labels_all = new_labels.repeat(repli)
-                label_mapping = {0: "Lobular", 1: "Ductal"}
-                # Apply the mapping to convert numeric labels to text labels
-                new_labels_all = [label_mapping[int(label)] for label in new_labels_all]
                 new_images = torch.cat((new_images, torch.unsqueeze(new_labels_all, 1)), dim=1)
             elif modelname == "AE":
                 new_images = model.decoder(rand_features)

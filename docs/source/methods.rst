@@ -6,7 +6,7 @@ Methods
 ApplyExperiment
 ----------------
 
-.. autofunction:: syng_bts_imports.python.Experiments_new.ApplyExperiment
+.. autofunction:: syng_bts.python.Experiments_new.ApplyExperiment
 
 For example:
 
@@ -23,7 +23,7 @@ For example:
 PilotExperiment
 ------------
 
-.. autofunction:: syng_bts_imports.python.Experiments_new.PilotExperiment
+.. autofunction:: syng_bts.python.Experiments_new.PilotExperiment
 
 For example:
 
@@ -39,7 +39,7 @@ For example:
 TransferExperiment
 ----------------
 
-.. autofunction:: syng_bts_imports.python.Experiments_new.TransferExperiment
+.. autofunction:: syng_bts.python.Experiments_new.TransferExperiment
 
 For example:
 

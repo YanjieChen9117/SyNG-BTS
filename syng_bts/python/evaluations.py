@@ -100,13 +100,13 @@ def evaluation(generated_input: str = "BRCASubtypeSel_train_epoch285_CVAE1-20_ge
     """
     train_path = "../Case/BRCASubtype/" + generated_input
     if generated_input == 'BRCASubtypeSel_train_epoch285_CVAE1-20_generated.csv' and not os.path.exists(path=train_path):
-        with pkg_resources.open_text('syng_bts_imports.Case.BRCASubtype', 'BRCASubtypeSel_train_epoch285_CVAE1-20_generated.csv') as data_file:
+        with pkg_resources.open_text('syng_bts.Case.BRCASubtype', 'BRCASubtypeSel_train_epoch285_CVAE1-20_generated.csv') as data_file:
             generated = pd.read_csv(data_file)
     else:
         generated = pd.read_csv(train_path, header = 0)
     test_path = "../Case/BRCASubtype/" + real_input
     if real_input == 'BRCASubtypeSel_test.csv' and not os.path.exists(path=test_path):
-        with pkg_resources.open_text('syng_bts_imports.Case.BRCASubtype', 'BRCASubtypeSel_test.csv') as data_file:
+        with pkg_resources.open_text('syng_bts.Case.BRCASubtype', 'BRCASubtypeSel_test.csv') as data_file:
             real = pd.read_csv(data_file)
     else:
         real = pd.read_csv(test_path, header = 0)

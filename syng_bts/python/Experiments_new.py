@@ -60,7 +60,7 @@ def PilotExperiment(dataname, pilot_size, model, batch_frac, learning_rate, epoc
 
     # just use an if statement for datasets that are already built in
     if dataname == 'SKCMPositive_4' and not os.path.exists(path=path):
-        with pkg_resources.open_text('syng_bts_imports.RealData', 'SKCMPositive_4.csv') as data_file:
+        with pkg_resources.open_text('syng_bts.RealData', 'SKCMPositive_4.csv') as data_file:
             df = pd.read_csv(data_file)
     else:
         df = pd.read_csv(path, header = 0)
@@ -353,7 +353,7 @@ def ApplyExperiment(path, dataname, apply_log, new_size, model, batch_frac, lear
     read_path = path + dataname + ".csv"
     # just use an if statement for datasets that are already built in
     if dataname == 'BRCASubtypeSel' and not os.path.exists(path=path):
-        with pkg_resources.open_text('syng_bts_imports.Case.BRCASubtype', 'BRCASubtypeSel.csv') as data_file:
+        with pkg_resources.open_text('syng_bts.Case.BRCASubtype', 'BRCASubtypeSel.csv') as data_file:
             df = pd.read_csv(data_file)
     else:
         df = pd.read_csv(read_path, header = 0)

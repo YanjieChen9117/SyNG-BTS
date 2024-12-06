@@ -609,7 +609,7 @@ def TransferExperiment(pilot_size, fromname, toname, fromsize, model, new_size=5
     toname : string 
                 name of the fine tuning dataset
     fromsize : int
-                number of generated samples when pre-training the model
+                number of samples when pre-training the model
     new_size : int
                 if apply experiment, this will be the sample size of generated samples
     apply_log : boolean

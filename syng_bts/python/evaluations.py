@@ -9,52 +9,76 @@ import os
 import importlib.resources as pkg_resources
 
 
-def heatmap_eval(dat_generated, dat_real):
+def heatmap_eval(dat_real,dat_generated=None):
     r"""
-    This function creates a heatmap visualization comparing the generated data and the real data
+    This function creates a heatmap visualization comparing the generated data and the real data.
 
     Parameters
     -----------
-    dat_generated : pd.DataFrame
-            the data generated from ApplyExperiment
     dat_real: pd.DataFrame
             the original copy of the data
+    dat_generated : pd.DataFrame, optional
+            the generated data
     
     """
-    fig, axs = plt.subplots(ncols=2, figsize=(12, 6),
-                            gridspec_kw=dict(width_ratios=[dat_generated.shape[1], dat_real.shape[1]]))
+    if dat_generated is None:
+        # Only plot dat_real if dat_generated is None
+        plt.figure(figsize=(6, 6))
+        sns.heatmap(dat_real, cbar=True)
+        plt.title('Real Data')
+        plt.xlabel('Features')
+        plt.ylabel('Samples')
+    else:
+        # Plot both dat_generated and dat_real side by side
+        fig, axs = plt.subplots(ncols=2, figsize=(12, 6),
+                                gridspec_kw=dict(width_ratios=[0.5, 0.55]))
 
-    sns.heatmap(dat_generated, ax=axs[0], cbar=False)
-    axs[0].set_title('Generated Data')
-    axs[0].set_xlabel('Features')
-    axs[0].set_ylabel('Samples')
+        sns.heatmap(dat_generated, ax=axs[0], cbar=False)
+        axs[0].set_title('Generated Data')
+        axs[0].set_xlabel('Features')
+        axs[0].set_ylabel('Samples')
 
-    sns.heatmap(dat_real, ax=axs[1], cbar=True)
-    axs[1].set_title('Real Data')
-    axs[1].set_xlabel('Features')
-    axs[1].set_ylabel('Samples')
-
-    plt.show()
+        sns.heatmap(dat_real, ax=axs[1], cbar=True)
+        axs[1].set_title('Real Data')
+        axs[1].set_xlabel('Features')
+        axs[1].set_ylabel('Samples')
 
 
-def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, legend_pos="top"):
+
+def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, random_state = 42, legend_pos="top"):
     r"""
-    This function creates a UMAP visualization comparing the generated data and the real data
+    This function creates a UMAP visualization comparing the generated data and the real data.
 
     Parameters
     -----------
     dat_generated : pd.DataFrame
-            the data generated from ApplyExperiment
+            the generated data, input None if unavailable
     dat_real: pd.DataFrame
             the original copy of the data
     groups_generated : pd.Series
-            the groups generated
+            the groups generated, input None if unavailable
     groups_real : pd.Series
             the real groups
     legend_pos : string
             legend location
     
     """
+
+    if dat_generated is None and groups_generated is None:
+        # Only plot the real data
+        reducer = UMAP(random_state=random_state)
+        embedding = reducer.fit_transform(dat_real.values)
+
+        umap_df = pd.DataFrame(embedding, columns=['UMAP1', 'UMAP2'])
+        umap_df['Group'] = groups_real.astype(str)  # Ensure groups are hashable for seaborn
+
+        # Plotting
+        plt.figure(figsize=(10, 8))
+        sns.scatterplot(data=umap_df, x='UMAP1', y='UMAP2', style='Group', palette='bright')
+        plt.legend(title='Group', loc=legend_pos)
+        plt.title('UMAP Projection of Real Data')
+        plt.show()
+        return
     
     # Filter out features with zero variance in generated data
     non_zero_var_cols = dat_generated.var(axis=0) != 0
@@ -64,7 +88,7 @@ def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, legend_pos
     dat_generated = dat_generated.loc[:, non_zero_var_cols]
 
     # Combine datasets
-    combined_data = np.vstack((dat_real.values, dat_generated.values))  # Ensure conversion to NumPy array if necessary
+    combined_data = np.vstack((dat_real.values, dat_generated.values))  
     combined_groups = np.concatenate((groups_real, groups_generated))
     combined_labels = np.array(['Real'] * dat_real.shape[0] + ['Generated'] * dat_generated.shape[0])
 
@@ -72,7 +96,7 @@ def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, legend_pos
     combined_groups = [str(group) for group in combined_groups]  # Convert groups to string if not already
 
     # UMAP dimensionality reduction
-    reducer = UMAP(random_state=42)
+    reducer = UMAP(random_state=random_state)
     embedding = reducer.fit_transform(combined_data)
 
     umap_df = pd.DataFrame(embedding, columns=['UMAP1', 'UMAP2'])

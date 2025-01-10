@@ -12,7 +12,8 @@ import importlib.resources as pkg_resources
 def heatmap_eval(dat_real,dat_generated=None):
     r"""
     This function creates a heatmap visualization comparing the generated data and the real data.
-
+    dat_generated is applicable only if 2 sets of data is available.
+    
     Parameters
     -----------
     dat_real: pd.DataFrame
@@ -48,6 +49,7 @@ def heatmap_eval(dat_real,dat_generated=None):
 def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, random_state = 42, legend_pos="top"):
     r"""
     This function creates a UMAP visualization comparing the generated data and the real data.
+    If only 1 set of data is available, dat_generated and groups_generated should have None as inputs.
 
     Parameters
     -----------

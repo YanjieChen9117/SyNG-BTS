@@ -5,12 +5,14 @@ Created on Sun Mar 27 15:22:40 2022
 
 @author: yunhui, xinyi
 """
+
 import torch
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
 import random
+from pathlib import Path
 
 
 def preprocessinglog2(dataset):
@@ -30,7 +32,7 @@ def set_all_seeds(seed):
 def create_labels(n_samples, groups=None):
     # create binary labels and blurry labels for training two-group data
     set_all_seeds(10)  # randomness only for blur labels generation.
-    if (groups is None):
+    if groups is None:
         labels = torch.zeros([n_samples, 1])
         blurlabels = labels
     else:
@@ -45,7 +47,9 @@ def create_labels(n_samples, groups=None):
 
 def draw_pilot(dataset, labels, blurlabels, n_pilot, seednum):
     # draw pilot datasets
-    set_all_seeds(seednum)  # each draw has its own seednum, so guaranteed that 25 replicated sets are not the same
+    set_all_seeds(
+        seednum
+    )  # each draw has its own seednum, so guaranteed that 25 replicated sets are not the same
     n_samples = dataset.shape[0]
     if torch.unique(labels).shape[0] == 1:
         shuffled_indices = torch.randperm(n_samples)
@@ -83,10 +87,10 @@ def draw_pilot(dataset, labels, blurlabels, n_pilot, seednum):
 
 def Gaussian_aug(rawdata, rawlabels, multiplier):
     # Gaussian augmentation
-    # This function performs offline augmentation by adding gaussian noise to the 
+    # This function performs offline augmentation by adding gaussian noise to the
     # log2 counts, rawdata is the data generated from draw_pilot(), so does rawlabels,
-    # multiplier specifies the number of samples for each kind of label, must be a list if 
-    # unique labels > 1. This function generates rawdata and rawlabels again but with 
+    # multiplier specifies the number of samples for each kind of label, must be a list if
+    # unique labels > 1. This function generates rawdata and rawlabels again but with
     # gaussian augmented data with size multiplier*n_rawdata
 
     oriraw = rawdata
@@ -94,35 +98,53 @@ def Gaussian_aug(rawdata, rawlabels, multiplier):
     for all_mult in multiplier:
         for mult in list(range(all_mult)):
             rawdata = torch.cat(
-                (rawdata, oriraw + torch.normal(mean=0, std=1, size=(oriraw.shape[0], oriraw.shape[1]))), dim=0)
+                (
+                    rawdata,
+                    oriraw
+                    + torch.normal(
+                        mean=0, std=1, size=(oriraw.shape[0], oriraw.shape[1])
+                    ),
+                ),
+                dim=0,
+            )
             rawlabels = torch.cat((rawlabels, orirawlabels), dim=0)
 
     return rawdata, rawlabels
 
 
-def plot_training_loss(minibatch_losses, num_epochs, averaging_iterations=100, custom_label=''):
+def plot_training_loss(
+    minibatch_losses, num_epochs, averaging_iterations=100, custom_label=""
+):
     iter_per_epoch = len(minibatch_losses) // num_epochs
 
     plt.figure()
     ax1 = plt.subplot(1, 1, 1)
-    ax1.plot(range(len(minibatch_losses)),
-             (minibatch_losses), label=f'Minibatch Loss{custom_label}')
-    ax1.set_xlabel('Iterations')
-    ax1.set_ylabel('Loss')
+    ax1.plot(
+        range(len(minibatch_losses)),
+        (minibatch_losses),
+        label=f"Minibatch Loss{custom_label}",
+    )
+    ax1.set_xlabel("Iterations")
+    ax1.set_ylabel("Loss")
 
     if len(minibatch_losses) < 1000:
         num_losses = len(minibatch_losses) // 2
     else:
         num_losses = 1000
 
-    ax1.set_ylim([
-        0, np.max(minibatch_losses[num_losses:]) * 1.5
-    ])
+    ax1.set_ylim([0, np.max(minibatch_losses[num_losses:]) * 1.5])
 
-    ax1.plot(np.convolve(minibatch_losses,
-                         np.ones(averaging_iterations, ) / averaging_iterations,
-                         mode='valid'),
-             label=f'Running Average{custom_label}')
+    ax1.plot(
+        np.convolve(
+            minibatch_losses,
+            np.ones(
+                averaging_iterations,
+            )
+            / averaging_iterations,
+            mode="valid",
+        ),
+        label=f"Running Average{custom_label}",
+    )
     ax1.legend()
 
     ###################
@@ -135,17 +157,19 @@ def plot_training_loss(minibatch_losses, num_epochs, averaging_iterations=100, c
     ax2.set_xticks(newpos[::10])
     ax2.set_xticklabels(newlabel[::10])
 
-    ax2.xaxis.set_ticks_position('bottom')
-    ax2.xaxis.set_label_position('bottom')
-    ax2.spines['bottom'].set_position(('outward', 45))
-    ax2.set_xlabel('Epochs')
+    ax2.xaxis.set_ticks_position("bottom")
+    ax2.xaxis.set_label_position("bottom")
+    ax2.spines["bottom"].set_position(("outward", 45))
+    ax2.set_xlabel("Epochs")
     ax2.set_xlim(ax1.get_xlim())
     ###################
 
     plt.tight_layout()
 
 
-def plot_recons_samples(savepath, model, modelname, data_loader, n_features, plot=False):
+def plot_recons_samples(
+    savepath, model, modelname, data_loader, n_features, plot=False
+):
     # plot reconstructed samples heatmap and save reconstructed samples as .csv file
 
     orig_all = torch.zeros([1, n_features])
@@ -177,19 +201,26 @@ def plot_recons_samples(savepath, model, modelname, data_loader, n_features, plo
         orig_all = torch.cat((orig_all, torch.unsqueeze(labels, 1)), dim=1)
         decoded_all = torch.cat((decoded_all, torch.unsqueeze(labels, 1)), dim=1)
     if plot:
-        sns.heatmap(torch.cat((orig_all, decoded_all), dim=0).detach().numpy(), cmap="YlGnBu")
+        sns.heatmap(
+            torch.cat((orig_all, decoded_all), dim=0).detach().numpy(), cmap="YlGnBu"
+        )
         plt.show()
 
     if savepath is not None:
         path_components = savepath.split("/")
         directory = path_components[1]
         os.makedirs(directory, exist_ok=True)
-        file_path = directory + '/' + path_components[2]
+        file_path = directory + "/" + path_components[2]
         # used to be savepath instead of file_path
-        np.savetxt(file_path, torch.cat((orig_all, decoded_all), dim=0).detach().numpy(), delimiter=",")
+        np.savetxt(
+            file_path,
+            torch.cat((orig_all, decoded_all), dim=0).detach().numpy(),
+            delimiter=",",
+        )
     else:
         return torch.cat((orig_all, decoded_all), dim=0).detach(), torch.cat(
-            (torch.unsqueeze(labels, 1), torch.unsqueeze(labels, 1)), dim=0)
+            (torch.unsqueeze(labels, 1), torch.unsqueeze(labels, 1)), dim=0
+        )
 
 
 # def plot_latent_space_with_labels(num_classes, data_loader, encoding_fn):
@@ -215,28 +246,31 @@ def plot_recons_samples(savepath, model, modelname, data_loader, n_features, plo
 #     plt.legend()
 
 
-def plot_new_samples(model, modelname, savepathnew, latent_size, num_images, plot=False):
+def plot_new_samples(
+    model, modelname, savepathnew, latent_size, num_images, plot=False
+):
     # plot new samples heatmap and save new samples as .csv file
 
     with torch.no_grad():
-
         ##########################
         ###### RANDOM SAMPLE #####
-        ##########################    
+        ##########################
         if len(num_images) == 1:
             num_images = num_images[0]
             rand_features = torch.randn(num_images, latent_size)
             if modelname == "CVAE":
                 # if only one number of new samples is provided, generate half 0, half 1
                 labels = torch.ones(num_images, 1)
-                labels[:int(num_images / 2), 0] = 0
+                labels[: int(num_images / 2), 0] = 0
                 rand_features = torch.cat((rand_features, labels), dim=1)
                 new_images = model.decoder(rand_features)
                 new_labels = torch.ones(num_images)
-                new_labels[:int(num_images / 2)] = 0
+                new_labels[: int(num_images / 2)] = 0
 
                 # new samples are still with last column as group indication
-                new_images = torch.cat((new_images, torch.unsqueeze(new_labels, 1)), dim=1)
+                new_images = torch.cat(
+                    (new_images, torch.unsqueeze(new_labels, 1)), dim=1
+                )
             elif modelname == "AE":
                 new_images = model.decoder(rand_features)
             elif modelname == "VAE":
@@ -245,16 +279,16 @@ def plot_new_samples(model, modelname, savepathnew, latent_size, num_images, plo
                 new_images = model.generator(rand_features)
             elif modelname == "glow":
                 new_images = model.sample(num_images)
-            elif modelname == 'realnvp':
+            elif modelname == "realnvp":
                 new_images = model.sample(num_images)
-            elif modelname == 'maf':
+            elif modelname == "maf":
                 new_images = model.sample(num_images)
         else:
             # if new_size = num_images = [n_for_0, n_for_1, replicate]
             num_images_0 = num_images[0]
             num_images_1 = num_images[1]
             repli = num_images[2]
-            num_images_repe = (num_images_0 + num_images_1)
+            num_images_repe = num_images_0 + num_images_1
             num_images = (num_images_0 + num_images_1) * repli
             rand_features = torch.randn(num_images, latent_size)
             if modelname == "CVAE":
@@ -266,18 +300,20 @@ def plot_new_samples(model, modelname, savepathnew, latent_size, num_images, plo
                 new_labels = torch.ones(num_images_repe)
                 new_labels[:num_images_0] = 0
                 new_labels_all = new_labels.repeat(repli)
-                new_images = torch.cat((new_images, torch.unsqueeze(new_labels_all, 1)), dim=1)
+                new_images = torch.cat(
+                    (new_images, torch.unsqueeze(new_labels_all, 1)), dim=1
+                )
             elif modelname == "AE":
                 new_images = model.decoder(rand_features)
             elif modelname == "VAE":
                 new_images = model.decoder(rand_features)
             elif modelname == "GANs":
                 new_images = model.generator(rand_features)
-            elif modelname == 'glow':
+            elif modelname == "glow":
                 new_images = model.sample(num_images)
-            elif modelname == 'realnvp':
+            elif modelname == "realnvp":
                 new_images = model.sample(num_images)
-            elif modelname == 'maf':
+            elif modelname == "maf":
                 new_images = model.sample(num_images)
 
         ##########################
@@ -290,23 +326,27 @@ def plot_new_samples(model, modelname, savepathnew, latent_size, num_images, plo
             plt.show()
 
         if savepathnew is not None:
-            path_components = savepathnew.split("/")
+            if isinstance(savepathnew, Path):
+                path_components = savepathnew.parts
+            else:
+                path_components = str(savepathnew).split("/")
             directory = path_components[1]
             os.makedirs(directory, exist_ok=True)
-            file_path = directory + '/' + path_components[2] + 'plot'
+            file_path = directory + "/" + path_components[2] + "plot"
             # used to be savepath instead of file_path
             np.savetxt(file_path, new_images.detach().numpy(), delimiter=",")
         else:
             return new_images
 
 
-def plot_multiple_training_losses(losses_list,
-                                  num_epochs,
-                                  averaging_iterations=100,
-                                  custom_labels_list=None):
+def plot_multiple_training_losses(
+    losses_list, num_epochs, averaging_iterations=100, custom_labels_list=None
+):
     for i, _ in enumerate(losses_list):
         if not len(losses_list[i]) == len(losses_list[0]):
-            raise ValueError('All loss tensors need to have the same number of elements.')
+            raise ValueError(
+                "All loss tensors need to have the same number of elements."
+            )
 
     if custom_labels_list is None:
         custom_labels_list = [str(i) for i, _ in enumerate(custom_labels_list)]
@@ -317,16 +357,25 @@ def plot_multiple_training_losses(losses_list,
     ax1 = plt.subplot(1, 1, 1)
 
     for i, minibatch_loss_tensor in enumerate(losses_list):
-        ax1.plot(range(len(minibatch_loss_tensor)),
-                 (minibatch_loss_tensor),
-                 label=f'Minibatch Loss{custom_labels_list[i]}')
-        ax1.set_xlabel('Iterations')
-        ax1.set_ylabel('Loss')
+        ax1.plot(
+            range(len(minibatch_loss_tensor)),
+            (minibatch_loss_tensor),
+            label=f"Minibatch Loss{custom_labels_list[i]}",
+        )
+        ax1.set_xlabel("Iterations")
+        ax1.set_ylabel("Loss")
 
-        ax1.plot(np.convolve(minibatch_loss_tensor,
-                             np.ones(averaging_iterations, ) / averaging_iterations,
-                             mode='valid'),
-                 color='black')
+        ax1.plot(
+            np.convolve(
+                minibatch_loss_tensor,
+                np.ones(
+                    averaging_iterations,
+                )
+                / averaging_iterations,
+                mode="valid",
+            ),
+            color="black",
+        )
 
     if len(losses_list[0]) < 1000:
         num_losses = len(losses_list[0]) // 2
@@ -346,10 +395,10 @@ def plot_multiple_training_losses(losses_list,
     ax2.set_xticks(newpos[::10])
     ax2.set_xticklabels(newlabel[::10])
 
-    ax2.xaxis.set_ticks_position('bottom')
-    ax2.xaxis.set_label_position('bottom')
-    ax2.spines['bottom'].set_position(('outward', 45))
-    ax2.set_xlabel('Epochs')
+    ax2.xaxis.set_ticks_position("bottom")
+    ax2.xaxis.set_label_position("bottom")
+    ax2.spines["bottom"].set_position(("outward", 45))
+    ax2.set_xlabel("Epochs")
     ax2.set_xlim(ax1.get_xlim())
     ###################
 

@@ -369,7 +369,7 @@ def PilotExperiment(
                 directory = losspath.split("/")[1]
                 os.makedirs(directory, exist_ok=True)
 
-                log_pd.to_csv(Path(losspath[3:]), index=False)
+                log_pd.to_csv(Path(losspath), index=False)
 
             elif "AE" in modelname:
                 log_dict = training_AEs(
@@ -405,8 +405,8 @@ def PilotExperiment(
                 directory = losspath.split("/")[1]
                 os.makedirs(directory, exist_ok=True)
 
-                # [3:] to remove '../' from relative pathing in package
-                log_pd.to_csv(Path(losspath[3:]), index=False)
+                #  to remove '../' from relative pathing in package
+                log_pd.to_csv(Path(losspath), index=False)
             elif "maf" in modelname:
                 training_flows(
                     savepathnew=savepathnew,
@@ -693,7 +693,7 @@ def ApplyExperiment(
             directory = directory + "/" + components[i]
             os.makedirs(directory, exist_ok=True)
 
-        log_pd.to_csv(Path(losspath[3:]), index=False)
+        log_pd.to_csv(Path(losspath), index=False)
 
     elif "AE" in modelname:
         log_dict = training_AEs(
@@ -734,7 +734,7 @@ def ApplyExperiment(
             directory = directory + "/" + components[i]
             os.makedirs(directory, exist_ok=True)
 
-        log_pd.to_csv(Path(losspath[3:]), index=False)
+        log_pd.to_csv(Path(losspath), index=False)
     elif "maf" in modelname:
         training_flows(
             savepathnew=savepathnew,

@@ -45,43 +45,47 @@ def heatmap_eval(dat_real,dat_generated=None):
         axs[1].set_ylabel('Samples')
 
 
-
-def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, random_state = 42, legend_pos="top"):
+def UMAP_eval(dat_generated, dat_real, groups_generated=None, groups_real=None, random_state=42, legend_pos="top"):
     r"""
     This function creates a UMAP visualization comparing the generated data and the real data.
     If only 1 set of data is available, dat_generated and groups_generated should have None as inputs.
 
     Parameters
     -----------
-    dat_generated : pd.DataFrame
+    dat_generated : pd.DataFrame or None
             the generated data, input None if unavailable
     dat_real: pd.DataFrame
             the original copy of the data
-    groups_generated : pd.Series
+    groups_generated : pd.Series or None
             the groups generated, input None if unavailable
-    groups_real : pd.Series
-            the real groups
+    groups_real : pd.Series or None
+            the real groups, input None if unavailable
     legend_pos : string
             legend location
     
     """
 
-    if dat_generated is None and groups_generated is None:
+    if dat_generated is None:
         # Only plot the real data
         reducer = UMAP(random_state=random_state)
         embedding = reducer.fit_transform(dat_real.values)
 
         umap_df = pd.DataFrame(embedding, columns=['UMAP1', 'UMAP2'])
-        umap_df['Group'] = groups_real.astype(str)  # Ensure groups are hashable for seaborn
-
-        # Plotting
+        
         plt.figure(figsize=(10, 8))
-        sns.scatterplot(data=umap_df, x='UMAP1', y='UMAP2', style='Group', palette='bright')
-        plt.legend(title='Group', loc=legend_pos)
-        plt.title('UMAP Projection of Real Data')
+        if groups_real is not None:
+            umap_df['Group'] = groups_real.astype(str)  # Ensure groups are hashable for seaborn
+            sns.scatterplot(data=umap_df, x='UMAP1', y='UMAP2', style='Group', palette='bright')
+            plt.legend(title='Group', loc=legend_pos)
+            plt.title('UMAP Projection of Real Data with Groups')
+        else:
+            plt.scatter(umap_df['UMAP1'], umap_df['UMAP2'], alpha=0.7)
+            plt.title('UMAP Projection of Real Data')
+
         plt.show()
         return
     
+    # If dat_generated is provided, we process both real and generated data
     # Filter out features with zero variance in generated data
     non_zero_var_cols = dat_generated.var(axis=0) != 0
 
@@ -91,11 +95,7 @@ def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, random_sta
 
     # Combine datasets
     combined_data = np.vstack((dat_real.values, dat_generated.values))  
-    combined_groups = np.concatenate((groups_real, groups_generated))
     combined_labels = np.array(['Real'] * dat_real.shape[0] + ['Generated'] * dat_generated.shape[0])
-
-    # Ensure that group labels are hashable and can be used in seaborn plots
-    combined_groups = [str(group) for group in combined_groups]  # Convert groups to string if not already
 
     # UMAP dimensionality reduction
     reducer = UMAP(random_state=random_state)
@@ -103,14 +103,26 @@ def UMAP_eval(dat_generated, dat_real, groups_generated, groups_real, random_sta
 
     umap_df = pd.DataFrame(embedding, columns=['UMAP1', 'UMAP2'])
     umap_df['Data Type'] = combined_labels
-    umap_df['Group'] = combined_groups
 
-    # Plotting
     plt.figure(figsize=(10, 8))
-    sns.scatterplot(data=umap_df, x='UMAP1', y='UMAP2', hue='Data Type', style='Group', palette='bright')
-    plt.legend(title='Data Type/Group', loc="best")
-    plt.title('UMAP Projection of Real and Generated Data')
+
+    if groups_real is not None and groups_generated is not None:
+        # If group information is available, use it for coloring
+        combined_groups = np.concatenate((groups_real, groups_generated))
+        combined_groups = [str(group) for group in combined_groups]  # Convert groups to string if not already
+        umap_df['Group'] = combined_groups
+        sns.scatterplot(data=umap_df, x='UMAP1', y='UMAP2', hue='Data Type', style='Group', palette='bright')
+        plt.legend(title='Data Type/Group', loc="best")
+        plt.title('UMAP Projection of Real and Generated Data with Groups')
+
+    else:
+        # If no group information, just plot real vs. generated data
+        sns.scatterplot(data=umap_df, x='UMAP1', y='UMAP2', hue='Data Type', palette='bright')
+        plt.legend(title='Data Type', loc="best")
+        plt.title('UMAP Projection of Real and Generated Data')
+
     plt.show()
+
 
 def evaluation(generated_input: str = "BRCASubtypeSel_train_epoch285_CVAE1-20_generated.csv", 
                real_input: str = "BRCASubtypeSel_test.csv"):

@@ -207,10 +207,15 @@ def plot_recons_samples(
         plt.show()
 
     if savepath is not None:
-        path_components = savepath.split("/")
-        directory = path_components[1]
+        components = savepath.split("/")
+        directory = "/".join(savepath.split("/")[:2])
         os.makedirs(directory, exist_ok=True)
-        file_path = directory + "/" + path_components[2]
+        for i in range(2, len(components) - 1):
+            directory = directory + "/" + components[i]
+            os.makedirs(directory, exist_ok=True)
+            print("Directory created: " + directory)
+
+        file_path = savepath
         # used to be savepath instead of file_path
         np.savetxt(
             file_path,
@@ -330,11 +335,14 @@ def plot_new_samples(
                 path_components = savepathnew.parts
             else:
                 path_components = str(savepathnew).split("/")
-            directory = path_components[1]
+            directory = "/".join(path_components[:2])
             os.makedirs(directory, exist_ok=True)
-            file_path = directory + "/" + path_components[2] + "plot"
+            for i in range(2, len(path_components) - 1):
+                directory = directory + "/" + path_components[i]
+                os.makedirs(directory, exist_ok=True)
+                print("Directory created: " + directory)
             # used to be savepath instead of file_path
-            np.savetxt(file_path, new_images.detach().numpy(), delimiter=",")
+            np.savetxt(savepathnew, new_images.detach().numpy(), delimiter=",")
         else:
             return new_images
 

@@ -13,7 +13,7 @@ print(install_requires)
 
 setup(
     name="syng_bts",
-    version="2.2",
+    version="2.4",
     packages=find_packages(),
     include_package_data=True,
     package_data={

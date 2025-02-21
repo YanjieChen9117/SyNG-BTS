@@ -366,9 +366,14 @@ def PilotExperiment(
                     }
                 )
                 # create directory if not exists
-                directory = losspath.split("/")[1]
+                components = losspath.split("/")
+                directory = "/".join(losspath.split("/")[:2])
+                # print("Directory created: " + directory)
                 os.makedirs(directory, exist_ok=True)
-
+                for i in range(2, len(components) - 1):
+                    directory = directory + "/" + components[i]
+                    os.makedirs(directory, exist_ok=True)
+                    print("Directory created: " + directory)
                 log_pd.to_csv(Path(losspath), index=False)
 
             elif "AE" in modelname:
@@ -402,10 +407,14 @@ def PilotExperiment(
                     }
                 )
                 # create directory if not exists
-                directory = losspath.split("/")[1]
+                components = losspath.split("/")
+                directory = "/".join(losspath.split("/")[:2])
+                # print("Directory created: " + directory)
                 os.makedirs(directory, exist_ok=True)
-
-                #  to remove '../' from relative pathing in package
+                for i in range(2, len(components) - 1):
+                    directory = directory + "/" + components[i]
+                    os.makedirs(directory, exist_ok=True)
+                    print("Directory created: " + directory)
                 log_pd.to_csv(Path(losspath), index=False)
             elif "maf" in modelname:
                 training_flows(
@@ -687,12 +696,13 @@ def ApplyExperiment(
         # create directory if not exists
         # temp fix to paths
         components = losspath.split("/")
-        directory = losspath.split("/")[1]
+        directory = "/".join(losspath.split("/")[:2])
+        # print("Directory created: " + directory)
         os.makedirs(directory, exist_ok=True)
         for i in range(2, len(components) - 1):
             directory = directory + "/" + components[i]
             os.makedirs(directory, exist_ok=True)
-
+            print("Directory created: " + directory)
         log_pd.to_csv(Path(losspath), index=False)
 
     elif "AE" in modelname:
@@ -728,12 +738,13 @@ def ApplyExperiment(
         # create directory if not exists
         # temp fix to paths
         components = losspath.split("/")
-        directory = losspath.split("/")[1]
+        directory = "/".join(losspath.split("/")[:2])
+        # print("Directory created: " + directory)
         os.makedirs(directory, exist_ok=True)
         for i in range(2, len(components) - 1):
             directory = directory + "/" + components[i]
             os.makedirs(directory, exist_ok=True)
-
+            print("Directory created: " + directory)
         log_pd.to_csv(Path(losspath), index=False)
     elif "maf" in modelname:
         training_flows(

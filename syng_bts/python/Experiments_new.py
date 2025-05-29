@@ -498,6 +498,9 @@ def ApplyExperiment(
     Gaussian_head_num=9,
     pre_model=None,
     save_model=None,
+    use_scheduler = False,
+    step_size = 10,
+    gamma = 0.5
 ):
     r"""
         This function trains VAE or CVAE, or GAN, WGAN, WGANGP, MAF, GLOW, RealNVP
@@ -547,7 +550,10 @@ def ApplyExperiment(
         df = pd.read_csv(read_path, header=0)
     dat_pd = df
     data_pd = dat_pd.select_dtypes(include=np.number)
+    if "groups" in data_pd.columns:
+        data_pd = data_pd.drop(columns=["groups"])
     oridata = torch.from_numpy(data_pd.to_numpy()).to(torch.float32)
+    colnames = data_pd.columns
     if apply_log:
         oridata = preprocessinglog2(oridata)
     n_samples = oridata.shape[0]
@@ -711,6 +717,7 @@ def ApplyExperiment(
             savepathnew=savepathnew,  # path to save newly generated samples
             rawdata=rawdata,  # raw data tensor with samples in row, features in column
             rawlabels=rawlabels,  # abels for each sample, n_samples * 1, will not be used in AE or VAE
+            colnames = colnames,  # colnames saved
             batch_size=round(rawdata.shape[0] * batch_frac),  # batch size
             random_seed=random_seed,
             modelname=modelname,  # choose from "VAE", "AE"
@@ -726,6 +733,9 @@ def ApplyExperiment(
             new_size=new_size,  # how many new samples you want to generate
             save_new=True,  # whether save new samples, if True, savepathnew must be provided
             plot=False,
+            use_scheduler = use_scheduler,
+            step_size = step_size,
+            gamma = gamma
         )  # whether plot reconstructed samples' heatmap
 
         print("VAEs model training finished.")

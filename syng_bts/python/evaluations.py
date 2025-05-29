@@ -9,7 +9,7 @@ import os
 import importlib.resources as pkg_resources
 
 
-def heatmap_eval(dat_real,dat_generated=None):
+def heatmap_eval(dat_real,dat_generated=None, save = False):
     r"""
     This function creates a heatmap visualization comparing the generated data and the real data.
     dat_generated is applicable only if 2 sets of data is available.
@@ -20,15 +20,16 @@ def heatmap_eval(dat_real,dat_generated=None):
             the original copy of the data
     dat_generated : pd.DataFrame, optional
             the generated data
-    
+    save: bool, optional
+            if save = True, return figures
     """
     if dat_generated is None:
         # Only plot dat_real if dat_generated is None
-        plt.figure(figsize=(6, 6))
-        sns.heatmap(dat_real, cbar=True)
-        plt.title('Real Data')
-        plt.xlabel('Features')
-        plt.ylabel('Samples')
+        fig = plt.figure(figsize=(6, 6))
+        ax = sns.heatmap(dat_real, cbar=True)
+        ax.set_title('Real Data')
+        ax.set_xlabel('Features')
+        ax.set_ylabel('Samples')
     else:
         # Plot both dat_generated and dat_real side by side
         fig, axs = plt.subplots(ncols=2, figsize=(12, 6),
@@ -44,8 +45,15 @@ def heatmap_eval(dat_real,dat_generated=None):
         axs[1].set_xlabel('Features')
         axs[1].set_ylabel('Samples')
 
+    plt.tight_layout()
 
-def UMAP_eval(dat_generated, dat_real, groups_generated=None, groups_real=None, random_state=42, legend_pos="top"):
+    if save:
+        return fig
+    else:
+        plt.show()
+
+
+def UMAP_eval(dat_generated, dat_real, groups_generated=None, groups_real=None, random_state=42, legend_pos="best"):
     r"""
     This function creates a UMAP visualization comparing the generated data and the real data.
     If only 1 set of data is available, dat_generated and groups_generated should have None as inputs.
@@ -176,4 +184,4 @@ def evaluation(generated_input: str = "BRCASubtypeSel_train_epoch285_CVAE1-20_ge
                                 groups_generated = groups_generated.iloc[generated_ind],
                                 legend_pos = "bottom")
 
-evaluation()
+# evaluation()

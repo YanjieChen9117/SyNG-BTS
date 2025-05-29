@@ -25,6 +25,7 @@ import torch.utils.data
 from tqdm import tqdm
 from tensorboardX import SummaryWriter
 import math
+import torch.optim.lr_scheduler as lr_scheduler
 
 
 #%%
@@ -32,6 +33,7 @@ def training_AEs(savepath,             # path to save reconstructed samples
                  savepathnew,          # path to save newly generated samples
                  rawdata,              # raw data tensor with samples in row, features in column
                  rawlabels,            # labels for each sample, n_samples * 1, will not be used in AE or VAE
+                 colnames,             # colnames saved
                  batch_size,           # batch size
                  random_seed,
                  modelname,            # choose from "AE","VAE","CVAE"
@@ -46,15 +48,22 @@ def training_AEs(savepath,             # path to save reconstructed samples
                  save_recons = False,  # wheter to save the reconstructed data 
                  new_size = None,      # how many new samples you want to generate, for AE there is no new size so use None
                  save_new = False,     # whether to save the newly generated samples
-                 plot = False):        # whether to plot the heatmaps of reconstructed and newly generated samples with the original ones
+                 plot = False
+                
+                 use_scheduler = False,# scheduler parameters
+                 step_size = 10,
+                 gamma = 0.5):        # whether to plot the heatmaps of reconstructed and newly generated samples with the original ones
         
     set_all_seeds(random_seed)
     num_features = rawdata.shape[1]
-    num_classes = rawlabels.shape[1]
+    labels_squeezed = rawlabels.squeeze(1).long()  # shape: (n,)
+    num_classes = len(torch.unique(labels_squeezed))
     data = TensorDataset(rawdata,rawlabels)
     
     if modelname == "CVAE":
         model = CVAE(num_features,num_classes)
+        colnames = list(colnames) 
+        colnames.append("groups")
     elif modelname == "VAE":
         model = VAE(num_features)
     elif modelname == "AE":
@@ -65,6 +74,10 @@ def training_AEs(savepath,             # path to save reconstructed samples
 
         
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate) 
+    if use_scheduler:
+        scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    else:
+        scheduler = None
     train_loader = DataLoader(data, batch_size = batch_size, shuffle=True)
     
     # transfer learning 
@@ -101,7 +114,7 @@ def training_AEs(savepath,             # path to save reconstructed samples
                 plt.show()
             if save_new:
                 # plot and save new generated data
-                plot_new_samples(model = best_model, savepathnew = savepathnew, latent_size = 32, modelname = "CVAE", num_images = new_size, plot = plot)
+                plot_new_samples(model = best_model, savepathnew = savepathnew, latent_size = 32, modelname = "CVAE", num_images = new_size, plot = plot, colnames = colnames)
                 plt.show()
         else:
             if save_recons:
@@ -110,7 +123,7 @@ def training_AEs(savepath,             # path to save reconstructed samples
                 plt.show()
             if save_new:
                 # plot and save new generated data
-                plot_new_samples(model = model, savepathnew = savepathnew, latent_size = 32, modelname = "CVAE", num_images = new_size, plot = plot)
+                plot_new_samples(model = model, savepathnew = savepathnew, latent_size = 32, modelname = "CVAE", num_images = new_size, plot = plot, colnames = colnames)
                 plt.show()
     elif modelname=="VAE":
         log_dict, best_model = ht.train_VAE(num_epochs = num_epochs,
@@ -124,7 +137,8 @@ def training_AEs(savepath,             # path to save reconstructed samples
                                          reconstruction_term_weight = 1,
                                          kl_weight = kl_weight,
                                          logging_interval = 50,
-                                         save_model = save_model)
+                                         save_model = save_model,
+                                         scheduler = scheduler)
         
         plot_training_loss(log_dict['train_reconstruction_loss_per_batch'], num_epochs, custom_label = " (reconstruction)")
         plt.show()
@@ -143,7 +157,7 @@ def training_AEs(savepath,             # path to save reconstructed samples
                 plt.show()
             if save_new:
                 # plot and save new generated data
-                plot_new_samples(model = best_model, savepathnew = savepathnew, latent_size = 32, modelname = "VAE", num_images = new_size, plot = plot)
+                plot_new_samples(model = best_model, savepathnew = savepathnew, latent_size = 32, modelname = "VAE", num_images = new_size, plot = plot, colnames = colnames)
                 plt.show()
             else:
                 plot_new_samples(model = best_model, savepathnew = None, latent_size = 32, modelname = "VAE", num_images = new_size, plot = plot)
@@ -159,7 +173,7 @@ def training_AEs(savepath,             # path to save reconstructed samples
                 plt.show()
             if save_new:
                 # plot and save new generated data
-                plot_new_samples(model = model, savepathnew = savepathnew, latent_size = 32, modelname = "VAE", num_images = new_size, plot = plot)
+                plot_new_samples(model = model, savepathnew = savepathnew, latent_size = 32, modelname = "VAE", num_images = new_size, plot = plot, colnames = colnames)
                 plt.show()
             else:
                 plot_new_samples(model = model, savepathnew = None, latent_size = 32, modelname = "VAE", num_images = new_size, plot = plot)

@@ -237,7 +237,7 @@ def plot_recons_samples(
             delimiter=",",
         )
     else:
-        return torch.cat((orig_all, decoded_all), dim=0).detach(), labels)
+        return torch.cat((orig_all, decoded_all), dim=0).detach(), labels
 
 
 # def plot_latent_space_with_labels(num_classes, data_loader, encoding_fn):

@@ -48,7 +48,7 @@ def training_AEs(savepath,             # path to save reconstructed samples
                  save_recons = False,  # wheter to save the reconstructed data 
                  new_size = None,      # how many new samples you want to generate, for AE there is no new size so use None
                  save_new = False,     # whether to save the newly generated samples
-                 plot = False
+                 plot = False,
                 
                  use_scheduler = False,# scheduler parameters
                  step_size = 10,

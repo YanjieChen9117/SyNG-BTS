@@ -492,7 +492,7 @@ def ApplyExperiment(
     batch_frac,
     learning_rate,
     epoch,
-    early_stop_num=30,
+    early_stop_num=None,
     off_aug=None,
     AE_head_num=2,
     Gaussian_head_num=9,
@@ -582,16 +582,15 @@ def ApplyExperiment(
     model = "batch" + str(batch_frac).replace(".", "") + "_" + model
 
     # decide epoch
-    if epoch is not None:
-        num_epochs = epoch
-        early_stop = False
-        epoch_info = str(epoch)
-        model = "epoch" + epoch_info + "_" + model
-    else:
-        num_epochs = 1000
+    num_epochs = epoch
+    if early_stop_num is not None:
         early_stop = True
         epoch_info = "early_stop"
         model = "epochES_" + model
+    else:
+        early_stop = False
+        epoch_info = str(epoch)
+        model = "epoch" + epoch_info + "_" + model
 
     # decide offline augmentation
     if off_aug == "AE_head":

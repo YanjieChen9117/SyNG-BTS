@@ -78,7 +78,7 @@ def training_AEs(savepath,             # path to save reconstructed samples
         scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
     else:
         scheduler = None
-    train_loader = DataLoader(data, batch_size = batch_size, shuffle=True)
+    train_loader = DataLoader(data, batch_size = batch_size, shuffle=True, drop_last=True)
     
     # transfer learning 
     if pre_model is not None:
@@ -228,7 +228,7 @@ def training_GANs(savepathnew,         # path to save newly generated samples
     set_all_seeds(random_seed)
     num_features = rawdata.shape[1]
     data = TensorDataset(rawdata,rawlabels)
-    train_loader = DataLoader(data, batch_size = batch_size, shuffle=True)
+    train_loader = DataLoader(data, batch_size = batch_size, shuffle=True, drop_last = True)
     latent_dim = 32
 
     model = GAN(num_features = num_features, latent_dim = latent_dim)
@@ -337,7 +337,7 @@ def training_iter(iter_times,          # how many times to iterative, will get p
         feed_set = data
         for i in range(iter_times):
             # batch_size = round(feed_data.shape[0] * 0.1)
-            feed_loader = DataLoader(feed_set, batch_size = batch_size, shuffle = True)
+            feed_loader = DataLoader(feed_set, batch_size = batch_size, shuffle = True, drop_last = True)
             log_dict, best_model = ht.train_AE(num_epochs = num_epochs,
                                             model = model,
                                             loss_fn = loss_fn,
@@ -375,7 +375,7 @@ def training_iter(iter_times,          # how many times to iterative, will get p
         feed_set = data
         for i in range(iter_times):
             batch_size = round(feed_data.shape[0] * 0.1)
-            feed_loader = DataLoader(feed_set, batch_size = batch_size, shuffle = True)
+            feed_loader = DataLoader(feed_set, batch_size = batch_size, shuffle = True, drop_last = True)
             log_dict, best_model = ht.train_VAE(num_epochs = num_epochs,
                                              model = model,
                                              loss_fn = loss_fn,
@@ -442,13 +442,13 @@ def training_flows(savepathnew, rawdata, batch_frac, valid_batch_frac, random_se
     # train_dataset = TensorDataset(train_dataset)
     # train_batch_size = round(batch_frac * (num_samples - N_validate))
     # valid_batch_size = round(valid_batch_frac * N_validate)
-    # train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
-    # valid_loader = DataLoader(valid_dataset, batch_size=valid_batch_size, shuffle=False)
+    # train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True, drop_last = True)
+    # valid_loader = DataLoader(valid_dataset, batch_size=valid_batch_size, shuffle=False, drop_last = True)
 
     ## Without validation
     train_dataset = TensorDataset(rawdata)
     train_batch_size = round(batch_frac * num_samples)
-    train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=train_batch_size, shuffle=True, drop_last = True)
 
 
 

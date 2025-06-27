@@ -128,7 +128,7 @@ class CVAE(nn.Module):
             nn.ReLU(True)
         )
 
-    def reparameterize(self, z_mu, z_logvar):
+    def reparameterize(self, z_mu, z_log_var):
         eps = torch.randn_like(z_mu)
         z = z_mu + eps * torch.exp(z_log_var/2.) 
         return z

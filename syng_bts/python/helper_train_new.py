@@ -327,7 +327,7 @@ def train_CVAE(num_epochs,
             
         print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))     
         # for early stopping
-        if early_stop & (epoch - best_epoch >= early_stop_num):
+        if early_stop and (epoch - best_epoch >= early_stop_num):
             print('Training for early stopping stops at epoch '+str(best_epoch) + " with best loss " + str(best_loss))
             print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))
             break
@@ -558,7 +558,7 @@ def train_WGAN(num_epochs,
             
         print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))     
         # for early stopping
-        if early_stop & (epoch - best_epoch >= early_stop_num):
+        if early_stop and (epoch - best_epoch >= early_stop_num):
             print('Training for early stopping stops at epoch '+str(best_epoch) + " with best loss " + str(best_loss))
             print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))
             break
@@ -731,7 +731,7 @@ def train_WGANGP(num_epochs,
             
         print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))     
         # for early stopping
-        if early_stop & (epoch - best_epoch >= early_stop_num):
+        if early_stop and (epoch - best_epoch >= early_stop_num):
             print('Training for early stopping stops at epoch '+str(best_epoch) + " with best loss " + str(best_loss))
             print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))
             break

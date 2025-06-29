@@ -134,7 +134,8 @@ def train_VAE(num_epochs,
               skip_epoch_stats = False,
               reconstruction_term_weight = 1,
               kl_weight = 1,
-              save_model = None):
+              save_model = None,
+              scheduler = None):
     
     log_dict = {'train_combined_loss_per_batch': [],
                 'train_combined_loss_per_epoch': [],
@@ -152,6 +153,9 @@ def train_VAE(num_epochs,
     best_epoch = 0
     best_model = model
     for epoch in range(num_epochs):
+        current_lr = optimizer.param_groups[0]['lr'] # Check Learning Rate (with scheduler)
+        print(f"\n Epoch {epoch+1}/{num_epochs} - Learning Rate: {current_lr:.6f}")
+        
         epoch_loss = []
         model.train()
         for batch_idx, (features,_) in enumerate(train_loader):
@@ -192,7 +196,10 @@ def train_VAE(num_epochs,
             print('Epoch: %03d/%03d | Batch %04d/%04d | Loss: %.4f'
                       % (epoch+1, num_epochs, batch_idx,
                          len(train_loader), loss))
-    
+
+        if scheduler is not None:
+            scheduler.step()
+        
         if not skip_epoch_stats:
             model.eval()
                 
@@ -259,7 +266,9 @@ def train_CVAE(num_epochs,
         epoch_loss = []
         model.train()
         for batch_idx, (features, lab) in enumerate(train_loader):
-
+            if lab.dim() == 1: # label (dim = 1)
+                lab = lab.unsqueeze(1)
+            lab = lab.float()
 
                 # FORWARD AND BACK PROP
             encoded, z_mean, z_log_var, decoded = model(features,lab)
@@ -318,7 +327,7 @@ def train_CVAE(num_epochs,
             
         print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))     
         # for early stopping
-        if early_stop & (epoch - best_epoch >= early_stop_num):
+        if early_stop and (epoch - best_epoch >= early_stop_num):
             print('Training for early stopping stops at epoch '+str(best_epoch) + " with best loss " + str(best_loss))
             print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))
             break
@@ -549,7 +558,7 @@ def train_WGAN(num_epochs,
             
         print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))     
         # for early stopping
-        if early_stop & (epoch - best_epoch >= early_stop_num):
+        if early_stop and (epoch - best_epoch >= early_stop_num):
             print('Training for early stopping stops at epoch '+str(best_epoch) + " with best loss " + str(best_loss))
             print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))
             break
@@ -722,7 +731,7 @@ def train_WGANGP(num_epochs,
             
         print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))     
         # for early stopping
-        if early_stop & (epoch - best_epoch >= early_stop_num):
+        if early_stop and (epoch - best_epoch >= early_stop_num):
             print('Training for early stopping stops at epoch '+str(best_epoch) + " with best loss " + str(best_loss))
             print('Time elapsed: %.2f min' % ((time.time() - start_time)/60))
             break

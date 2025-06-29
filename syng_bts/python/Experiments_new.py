@@ -99,9 +99,9 @@ def PilotExperiment(
     print("1. Read data, path is " + path)
 
     # get model name and kl_weight if modelname is some autoencoder
-    if len(re.split("([A-Z]+)(\d)([-+])(\d+)", model)) > 1:
-        kl_weight = int(re.split("([A-Z]+)(\d)([-+])(\d+)", model)[4])
-        modelname = re.split("([A-Z]+)(\d)([-+])(\d+)", model)[1]
+    if len(re.split(r"([A-Z]+)(\d)([-+])(\d+)", model)) > 1:
+        kl_weight = int(re.split(r"([A-Z]+)(\d)([-+])(\d+)", model)[4])
+        modelname = re.split(r"([A-Z]+)(\d)([-+])(\d+)", model)[1]
     else:
         modelname = model
         kl_weight = 1
@@ -492,12 +492,16 @@ def ApplyExperiment(
     batch_frac,
     learning_rate,
     epoch,
-    early_stop_num=30,
+    validation_rate = None, # Control whether separate the dataset in-function
+    early_stop_num=None,
     off_aug=None,
     AE_head_num=2,
     Gaussian_head_num=9,
     pre_model=None,
     save_model=None,
+    use_scheduler = False,
+    step_size = 10,
+    gamma = 0.5
 ):
     r"""
         This function trains VAE or CVAE, or GAN, WGAN, WGANGP, MAF, GLOW, RealNVP
@@ -534,6 +538,12 @@ def ApplyExperiment(
                       transfer learning input model. If pre_model == None, no transfer learning
     save_model : string
                     if the trained model should be saved, specify the path and name of the saved model
+    use_scheduler : bool
+                    turn on/off scheduler for training
+    step_size : int
+                    step size for scheduler
+    gamma : float
+                    gamma for scheduler
     """
 
     read_path = path + dataname + ".csv"
@@ -547,7 +557,10 @@ def ApplyExperiment(
         df = pd.read_csv(read_path, header=0)
     dat_pd = df
     data_pd = dat_pd.select_dtypes(include=np.number)
+    if "groups" in data_pd.columns:
+        data_pd = data_pd.drop(columns=["groups"])
     oridata = torch.from_numpy(data_pd.to_numpy()).to(torch.float32)
+    colnames = data_pd.columns
     if apply_log:
         oridata = preprocessinglog2(oridata)
     n_samples = oridata.shape[0]
@@ -556,13 +569,33 @@ def ApplyExperiment(
     else:
         groups = None
 
+    # valdata = None
+    # valgroups = None
+    # if validation_rate is not None and 0 <= validation_rate < 1:
+    #     val_size = int(n_samples * validation_rate)
+    #     train_size = n_samples - val_size
+
+    #     generator = torch.Generator().manual_seed(0)
+    #     oridata, valdata = torch.utils.data.random_split(oridata, [train_size, val_size], generator=generator)
+
+    #     if groups is not None:
+    #         groups_tensor = torch.tensor(groups.values)
+    #         origroups, valgroups = torch.utils.data.random_split(groups_tensor, [train_size, val_size], generator=generator)
+        # else:
+        #     origroups = valgroups = None
+    # else:
+        # train_data = oridata
+        # val_data = None
+        # train_groups = groups
+        # val_groups = None
+
     orilabels, oriblurlabels = create_labels(n_samples=n_samples, groups=groups)
     print("1. Read data, path is " + read_path)
 
     # get model name and kl_weight if modelname is some autoencoder
-    if len(re.split("([A-Z]+)(\d)([-+])(\d+)", model)) > 1:
-        kl_weight = int(re.split("([A-Z]+)(\d)([-+])(\d+)", model)[4])
-        modelname = re.split("([A-Z]+)(\d)([-+])(\d+)", model)[1]
+    if len(re.split(r"([A-Z]+)(\d)([-+])(\d+)", model)) > 1:
+        kl_weight = int(re.split(r"([A-Z]+)(\d)([-+])(\d+)", model)[4])
+        modelname = re.split(r"([A-Z]+)(\d)([-+])(\d+)", model)[1]
     else:
         modelname = model
         kl_weight = 1
@@ -576,16 +609,15 @@ def ApplyExperiment(
     model = "batch" + str(batch_frac).replace(".", "") + "_" + model
 
     # decide epoch
-    if epoch is not None:
-        num_epochs = epoch
-        early_stop = False
-        epoch_info = str(epoch)
-        model = "epoch" + epoch_info + "_" + model
-    else:
-        num_epochs = 1000
+    num_epochs = epoch
+    if early_stop_num is not None:
         early_stop = True
         epoch_info = "early_stop"
         model = "epochES_" + model
+    else:
+        early_stop = False
+        epoch_info = str(epoch)
+        model = "epoch" + epoch_info + "_" + model
 
     # decide offline augmentation
     if off_aug == "AE_head":
@@ -711,6 +743,7 @@ def ApplyExperiment(
             savepathnew=savepathnew,  # path to save newly generated samples
             rawdata=rawdata,  # raw data tensor with samples in row, features in column
             rawlabels=rawlabels,  # abels for each sample, n_samples * 1, will not be used in AE or VAE
+            colnames = colnames,  # colnames saved
             batch_size=round(rawdata.shape[0] * batch_frac),  # batch size
             random_seed=random_seed,
             modelname=modelname,  # choose from "VAE", "AE"
@@ -726,6 +759,9 @@ def ApplyExperiment(
             new_size=new_size,  # how many new samples you want to generate
             save_new=True,  # whether save new samples, if True, savepathnew must be provided
             plot=False,
+            use_scheduler = use_scheduler,
+            step_size = step_size,
+            gamma = gamma
         )  # whether plot reconstructed samples' heatmap
 
         print("VAEs model training finished.")
@@ -739,7 +775,7 @@ def ApplyExperiment(
         # temp fix to paths
         components = losspath.split("/")
         directory = "/".join(losspath.split("/")[:2])
-        # print("Directory created: " + directory)
+        print("Directory created: " + directory)
         os.makedirs(directory, exist_ok=True)
         for i in range(2, len(components) - 1):
             directory = directory + "/" + components[i]

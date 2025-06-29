@@ -8,11 +8,13 @@ Created on Sun Mar 27 15:22:40 2022
 
 import torch
 import numpy as np
+import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
 import random
 from pathlib import Path
+import torch.nn.functional as F
 
 
 def preprocessinglog2(dataset):
@@ -43,7 +45,21 @@ def create_labels(n_samples, groups=None):
         blurlabels[groups != base, 0] = (10 - 9) * torch.rand(sum(groups != base)) + 9
         blurlabels[groups == base, 0] = (1 - 0) * torch.rand(sum(groups == base)) + 0
     return labels, blurlabels
+    
+def create_labels_mul(n_samples, groups=None):
+    set_all_seeds(10)
 
+    if groups is None:
+        labels = torch.zeros([n_samples, 1], dtype=torch.float32)
+        blurlabels = labels.clone()
+        return labels, blurlabels
+
+    groups_cat = groups.astype("category")
+    codes = groups_cat.cat.codes
+    group_tensor = torch.from_numpy(codes.copy().values)
+    labels = group_tensor.float().unsqueeze(1) 
+    blurlabels = labels + torch.rand_like(labels)
+    return labels, blurlabels
 
 def draw_pilot(dataset, labels, blurlabels, n_pilot, seednum):
     # draw pilot datasets
@@ -127,7 +143,7 @@ def plot_training_loss(
     ax1.set_xlabel("Iterations")
     ax1.set_ylabel("Loss")
 
-    if len(minibatch_losses) < 1000:
+    if len(minibatch_losses) < 1001:
         num_losses = len(minibatch_losses) // 2
     else:
         num_losses = 1000
@@ -174,20 +190,18 @@ def plot_recons_samples(
 
     orig_all = torch.zeros([1, n_features])
     decoded_all = torch.zeros([1, n_features])
-    labels = torch.zeros(1) + 3
+    labels = torch.zeros(0, dtype=torch.long)
 
     for batch_idx, (features, lab) in enumerate(data_loader):
-        if modelname == "CVAE":
-            labels = torch.cat((labels, lab[:, 0]), dim=0)
-            with torch.no_grad():
+        labels_batch = torch.argmax(lab, dim=1)  # shape: (batch_size,)
+        labels = torch.cat((labels, labels_batch), dim=0)
+
+        with torch.no_grad():
+            if modelname == "CVAE":
                 encoded, z_mean, z_log_var, decoded_images = model(features, lab)
-        elif modelname == "VAE":
-            labels = torch.cat((labels, lab[:, 0]), dim=0)
-            with torch.no_grad():
+            elif modelname == "VAE":
                 encoded, z_mean, z_log_var, decoded_images = model(features)
-        else:
-            labels = torch.cat((labels, lab[:, 0]), dim=0)
-            with torch.no_grad():
+            else:
                 encoded, decoded_images = model(features)
 
         orig_all = torch.cat((orig_all, features), dim=0)
@@ -195,11 +209,11 @@ def plot_recons_samples(
 
     orig_all = orig_all[1:]
     decoded_all = decoded_all[1:]
-    labels = labels[1:]
-
+    
     if modelname == "CVAE":
-        orig_all = torch.cat((orig_all, torch.unsqueeze(labels, 1)), dim=1)
-        decoded_all = torch.cat((decoded_all, torch.unsqueeze(labels, 1)), dim=1)
+        labels = labels.unsqueeze(1).float()  # shape: (N,1)
+        orig_all = torch.cat((orig_all, labels), dim=1)
+        decoded_all = torch.cat((decoded_all, labels), dim=1)
     if plot:
         sns.heatmap(
             torch.cat((orig_all, decoded_all), dim=0).detach().numpy(), cmap="YlGnBu"
@@ -223,9 +237,7 @@ def plot_recons_samples(
             delimiter=",",
         )
     else:
-        return torch.cat((orig_all, decoded_all), dim=0).detach(), torch.cat(
-            (torch.unsqueeze(labels, 1), torch.unsqueeze(labels, 1)), dim=0
-        )
+        return torch.cat((orig_all, decoded_all), dim=0).detach(), labels
 
 
 # def plot_latent_space_with_labels(num_classes, data_loader, encoding_fn):
@@ -252,7 +264,7 @@ def plot_recons_samples(
 
 
 def plot_new_samples(
-    model, modelname, savepathnew, latent_size, num_images, plot=False
+    model, modelname, savepathnew, latent_size, num_images, plot=False, colnames = None
 ):
     # plot new samples heatmap and save new samples as .csv file
 
@@ -264,18 +276,22 @@ def plot_new_samples(
             num_images = num_images[0]
             rand_features = torch.randn(num_images, latent_size)
             if modelname == "CVAE":
-                # if only one number of new samples is provided, generate half 0, half 1
-                labels = torch.ones(num_images, 1)
-                labels[: int(num_images / 2), 0] = 0
+                num_classes = model.num_classes
+                base = num_images // num_classes
+                rem = num_images % num_classes
+                counts = [base]*num_classes
+                for i in range(rem):
+                    counts[i] += 1
+                labels_list = []
+                for class_id, n_c in enumerate(counts):
+                    ids = torch.full((n_c,), fill_value=class_id, dtype=torch.float32)
+                    labels_list.append(ids)
+                one_group_labels = torch.cat(labels_list)
+                labels = one_group_labels.unsqueeze(1)  # shape = [N, 1]
+                
                 rand_features = torch.cat((rand_features, labels), dim=1)
                 new_images = model.decoder(rand_features)
-                new_labels = torch.ones(num_images)
-                new_labels[: int(num_images / 2)] = 0
-
-                # new samples are still with last column as group indication
-                new_images = torch.cat(
-                    (new_images, torch.unsqueeze(new_labels, 1)), dim=1
-                )
+                new_images = torch.cat((new_images, labels), dim=1)
             elif modelname == "AE":
                 new_images = model.decoder(rand_features)
             elif modelname == "VAE":
@@ -289,25 +305,26 @@ def plot_new_samples(
             elif modelname == "maf":
                 new_images = model.sample(num_images)
         else:
-            # if new_size = num_images = [n_for_0, n_for_1, replicate]
-            num_images_0 = num_images[0]
-            num_images_1 = num_images[1]
-            repli = num_images[2]
-            num_images_repe = num_images_0 + num_images_1
-            num_images = (num_images_0 + num_images_1) * repli
+            # if new_size = num_images = [n_for_0, n_for_1, ... , n_for_(num_classes-1), replicate]
+            counts = num_images[:-1]
+            repli = num_images[-1]
+            num_images_repe = sum(counts)
+            num_images = num_images_repe * repli
             rand_features = torch.randn(num_images, latent_size)
             if modelname == "CVAE":
-                labels = torch.ones(num_images_repe, 1)
-                labels[:num_images_0, 0] = 0
-                labels_all = labels.repeat(repli, 1)
-                rand_features = torch.cat((rand_features, labels_all), dim=1)
+                if len(num_images) != num_classes + 1:
+                    raise ValueError("num_images should have length num_classes+1")
+
+                labels_list = []
+                for class_id, n_c in enumerate(counts):
+                    ids = torch.full((n_c,), fill_value=class_id, dtype=torch.float32)
+                    labels_list.append(ids)
+                one_group_labels = torch.cat(labels_list)
+                labels = one_group_labels.repeat(repli).unsqueeze(1)  # shape = [N, 1]
+
+                rand_features = torch.cat((rand_features, labels), dim=1)
                 new_images = model.decoder(rand_features)
-                new_labels = torch.ones(num_images_repe)
-                new_labels[:num_images_0] = 0
-                new_labels_all = new_labels.repeat(repli)
-                new_images = torch.cat(
-                    (new_images, torch.unsqueeze(new_labels_all, 1)), dim=1
-                )
+                new_images = torch.cat((new_images, labels), dim=1)
             elif modelname == "AE":
                 new_images = model.decoder(rand_features)
             elif modelname == "VAE":

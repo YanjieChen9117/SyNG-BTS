@@ -8,9 +8,9 @@ Created on Sun Mar 27 15:14:37 2022
 
 #%%
 
-from .helper_utils_new import set_all_seeds, plot_recons_samples, plot_new_samples, plot_training_loss, plot_multiple_training_losses
-from . import helper_train_new as ht
-from .helper_models_new import AE, VAE, CVAE, GAN
+from syng_bts.python.helper_utils_new import set_all_seeds, plot_recons_samples, plot_new_samples, plot_training_loss, plot_multiple_training_losses
+from syng_bts.python import helper_train_new as ht
+from syng_bts.python.helper_models_new import AE, VAE, CVAE, GAN
 import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import DataLoader

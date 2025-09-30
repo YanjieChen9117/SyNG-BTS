@@ -65,7 +65,7 @@ Library not loaded: @rpath/libomp.dylib
 - macOS 动态库链接路径问题
 - Python 3.13 二进制兼容性问题
 
-**解决方案**: 必须使用 Conda 环境（venv 无法解决）
+**解决方案**: 必须使用 Conda 环境（经过个人尝试，venv 无法解决）
 
 ```bash
 # 创建 conda 环境
@@ -78,13 +78,6 @@ conda install -c conda-forge xgboost -y
 # 安装其他依赖
 pip install -r requirements.txt
 ```
-
-**为什么 Conda 有效而 venv 无效**:
-- Conda 可管理 Python 包 + 系统级依赖
-- Conda 自动处理二进制依赖和动态链接
-- venv 仅为轻量级 Python 环境，无法管理系统库
-
-**配置时间**: 约 30-60 分钟（对不熟悉 conda 的用户）
 
 **受影响功能**: 
 - `XGB()` 函数
@@ -117,23 +110,6 @@ generated_file_name = r"./Case/LIHCSubtypeFamInd_train294_DESeq_epochES_batch01_
 real_file_name = r"./Case/BRCASubtypeSel_test.csv"
 generated_file_name = r"./Case/BRCASubtypeSel_train_epoch285_CVAE1-20_generated.csv"
 ```
-
----
-
-## 问题模式分析
-
-### 导入系统问题
-- **SyNG-BTS #1**: 相对导入 vs 绝对导入混淆
-- **教训**: 需要明确包的导入策略，建议使用绝对导入提高可移植性
-
-### 环境配置复杂性
-- **SyntheSize_py #1**: 复杂系统依赖（OpenMP）在 venv 中无法解决
-- **教训**: 对于科学计算/ML项目，应在文档中明确推荐 Conda 环境
-
-### 文档维护
-- **SyntheSize_py #2**: 示例代码与实际数据文件不同步
-- **教训**: 需要建立文档与代码同步的检查机制
-
 ---
 
 ## 建议改进

@@ -502,7 +502,8 @@ def ApplyExperiment(
     save_model=None,
     use_scheduler = False,
     step_size = 10,
-    gamma = 0.5
+    gamma = 0.5,
+    random_seed = 123
 ):
     r"""
         This function trains VAE or CVAE, or GAN, WGAN, WGANGP, MAF, GLOW, RealNVP
@@ -649,8 +650,6 @@ def ApplyExperiment(
         model = model + "_transfrom" + re.search(r"from([A-Z]+)_", pre_model).group(1)
 
     # hyperparameters
-    random_seed = 123
-
     savepath = path + dataname + "_" + model + "_recons.csv"
     savepathnew = path + dataname + "_" + model + "_generated.csv"
     losspath = path + dataname + "_" + model + "_loss.csv"
